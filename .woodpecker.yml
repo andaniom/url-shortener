@@ -1,0 +1,36 @@
+steps:
+  deploy:
+    image: docker:cli
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - docker compose up -d --build
+      - docker image prune -f
+    when:
+      branch: main
+
+  notify-telegram:
+    image: appleboy/drone-telegram
+    secrets: [telegram_token, telegram_to]
+    settings:
+      token:
+        from_secret: telegram_token
+      to:
+        from_secret: telegram_to
+      format: markdown
+      message: |
+        {{#success build.status}}
+        ✅ **Deploy Success**
+        {{else}}
+        ❌ **Deploy Failed**
+        {{/success}}
+
+        🚀 **Repo:** {{repo.name}}
+        🔢 **Build:** #{{build.number}} ({{build.event}})
+        ⏱️ **Duration:** {{since build.started}}
+        🌿 **Branch:** {{commit.branch}}
+        📝 **Commit:** {{commit.message}}
+        🔗 **Link:** [View]({{build.link}})
+    when:
+      status: [success, failure]
+      branch: main

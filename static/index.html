@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lnk - URL Shortener</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo h1 {
+            font-size: 48px;
+            font-weight: 700;
+            letter-spacing: -2px;
+        }
+
+        .logo h1 span {
+            color: #22c55e;
+        }
+
+        .logo p {
+            color: #888;
+            margin-top: 8px;
+        }
+
+        .shorten-box {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        input[type="text"], input[type="url"] {
+            flex: 1;
+            background: #252525;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #22c55e;
+        }
+
+        input::placeholder {
+            color: #666;
+        }
+
+        .custom-code {
+            margin-bottom: 16px;
+        }
+
+        .custom-code label {
+            display: block;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .custom-code input {
+            width: 100%;
+        }
+
+        button {
+            background: #22c55e;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result {
+            display: none;
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .result-url {
+            font-size: 20px;
+            font-weight: 600;
+            color: #22c55e;
+            word-break: break-all;
+        }
+
+        .result-original {
+            color: #888;
+            font-size: 14px;
+            margin-top: 8px;
+            word-break: break-all;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #444;
+        }
+
+        .qr-container {
+            text-align: center;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .qr-container.show {
+            display: block;
+        }
+
+        .qr-container img {
+            background: #fff;
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .stats {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 24px;
+            display: none;
+        }
+
+        .stats.show {
+            display: block;
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .stats-clicks {
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .stats-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .click-list {
+            margin-top: 16px;
+        }
+
+        .click-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #252525;
+            font-size: 14px;
+        }
+
+        .click-item:last-child {
+            border-bottom: none;
+        }
+
+        .click-ip {
+            color: #888;
+        }
+
+        .click-time {
+            color: #666;
+        }
+
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            color: #444;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        .error {
+            background: #3b1111;
+            border: 1px solid #5c1c1c;
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .result-actions {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>lnk<span>.</span></h1>
+            <p>Simple URL Shortener</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="shorten-box">
+            <div class="input-group">
+                <input type="url" id="url" placeholder="Paste your long URL here..." autofocus>
+                <button onclick="shorten()" id="shortenBtn">Shorten</button>
+            </div>
+            <div class="custom-code">
+                <label>Custom code (optional)</label>
+                <input type="text" id="code" placeholder="my-link" maxlength="20">
+            </div>
+        </div>
+
+        <div class="result" id="result">
+            <div class="result-header">
+                <div>
+                    <div class="result-url" id="resultUrl"></div>
+                    <div class="result-original" id="resultOriginal"></div>
+                </div>
+            </div>
+            <div class="result-actions">
+                <button onclick="copyUrl()" class="btn-secondary">Copy</button>
+                <button onclick="showQr()" class="btn-secondary">QR Code</button>
+                <button onclick="showStats()" class="btn-secondary">Stats</button>
+            </div>
+            <div class="qr-container" id="qrContainer">
+                <img id="qrImage" alt="QR Code">
+            </div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stats-header">
+                <div>
+                    <div class="stats-clicks" id="statsClicks">0</div>
+                    <div class="stats-label">total clicks</div>
+                </div>
+                <button onclick="hideStats()" class="btn-secondary">Close</button>
+            </div>
+            <div class="click-list" id="clickList"></div>
+        </div>
+
+        <div class="footer">
+            <p>Built with Go + SQLite</p>
+        </div>
+    </div>
+
+    <script>
+        let currentCode = '';
+
+        async function shorten() {
+            const urlInput = document.getElementById('url');
+            const codeInput = document.getElementById('code');
+            const btn = document.getElementById('shortenBtn');
+            const error = document.getElementById('error');
+            
+            error.classList.remove('show');
+            btn.disabled = true;
+            btn.textContent = 'Shortening...';
+
+            try {
+                const resp = await fetch('/api/shorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: urlInput.value,
+                        code: codeInput.value
+                    })
+                });
+
+                const data = await resp.json();
+                
+                if (!resp.ok) {
+                    throw new Error(data.error || 'Failed to shorten URL');
+                }
+
+                currentCode = data.code;
+                document.getElementById('resultUrl').textContent = data.short_url;
+                document.getElementById('resultOriginal').textContent = '→ ' + data.original;
+                document.getElementById('result').classList.add('show');
+                document.getElementById('qrContainer').classList.remove('show');
+                document.getElementById('stats').classList.remove('show');
+                
+                urlInput.value = '';
+                codeInput.value = '';
+            } catch (e) {
+                error.textContent = e.message;
+                error.classList.add('show');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Shorten';
+            }
+        }
+
+        function copyUrl() {
+            const url = document.getElementById('resultUrl').textContent;
+            navigator.clipboard.writeText(url);
+            const btn = event.target;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy', 2000);
+        }
+
+        function showQr() {
+            const container = document.getElementById('qrContainer');
+            const img = document.getElementById('qrImage');
+            img.src = '/api/qr/' + currentCode;
+            container.classList.add('show');
+        }
+
+        async function showStats() {
+            try {
+                const resp = await fetch('/api/stats/' + currentCode);
+                const data = await resp.json();
+                
+                document.getElementById('statsClicks').textContent = data.clicks || 0;
+                
+                const list = document.getElementById('clickList');
+                list.innerHTML = '';
+                
+                if (data.recent_clicks && data.recent_clicks.length > 0) {
+                    data.recent_clicks.forEach(click => {
+                        const item = document.createElement('div');
+                        item.className = 'click-item';
+                        item.innerHTML = `
+                            <span class="click-ip">${click.ip || 'Unknown'}</span>
+                            <span class="click-time">${new Date(click.created_at).toLocaleString()}</span>
+                        `;
+                        list.appendChild(item);
+                    });
+                } else {
+                    list.innerHTML = '<div class="click-item"><span>No clicks yet</span></div>';
+                }
+                
+                document.getElementById('stats').classList.add('show');
+            } catch (e) {
+                console.error('Failed to load stats:', e);
+            }
+        }
+
+        function hideStats() {
+            document.getElementById('stats').classList.remove('show');
+        }
+
+        // Enter key to submit
+        document.getElementById('url').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') shorten();
+        });
+    </script>
+</body>
+</html>

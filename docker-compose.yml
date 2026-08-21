@@ -1,0 +1,30 @@
+services:
+  lnk:
+    build: .
+    container_name: lnk
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    volumes:
+      - lnk-data:/app/data
+    environment:
+      - TZ=Asia/Jakarta
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+          cpus: "0.25"
+    networks:
+      - lnk-net
+
+volumes:
+  lnk-data:
+
+networks:
+  lnk-net:
+    driver: bridge
