@@ -41,7 +41,7 @@ func main() {
 
 	// Frontend
 	mux.HandleFunc("GET /", h.Index)
-	mux.HandleFunc("GET "/{code}", h.Redirect)
+	mux.HandleFunc("GET /{code}", h.Redirect)
 
 	// Health check
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +61,7 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	fmt.Printf("🚀 lnk.emsihub.com running on :%s\n", port)
+	fmt.Printf("lnk.emsihub.com running on :%s\n", port)
 	log.Fatal(srv.ListenAndServe())
 }
 
