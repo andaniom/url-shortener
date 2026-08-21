@@ -4,10 +4,11 @@ RUN apk add --no-cache gcc musl-dev
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY go.mod ./
 RUN go mod download
 
 COPY . .
+RUN go mod tidy
 RUN CGO_ENABLED=1 GOOS=linux go build -o /lnk -ldflags="-s -w" .
 
 FROM alpine:3.19
