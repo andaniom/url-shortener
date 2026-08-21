@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	qrcode "github.com/skip2/go-qrcode/qrcode"
+	qrcode "github.com/skip2/go-qrcode"
 
 	"lnk.emsihub.com/internal/database"
 )
